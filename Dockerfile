@@ -23,4 +23,11 @@ RUN echo "deb https://apt.dockerproject.org/repo debian-jessie main" > /etc/apt/
     && usermod -a -G docker jenkins \
     && systemctl enable docker
 
+ENV SIGIL_URL https://github.com/gliderlabs/sigil/releases/download/v0.4.0/sigil_0.4.0_Linux_x86_64.tgz
+
+RUN set -ex \
+    && wget -q $SIGIL_URL -O sigil.tgz \
+    && tar -zxv -C /usr/local/bin -f sigil.tgz \
+    && rm sigil.tgz
+
 USER jenkins
