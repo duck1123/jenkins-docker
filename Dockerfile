@@ -1,24 +1,30 @@
-FROM jenkinsci/jenkins
+FROM jenkins/jenkins
 
 USER root
+
+ENV DOCKER_COMPOSE_VERSION=1.15.0
 
 RUN apt-get update \
     && apt-get install -y \
        apt-transport-https \
        ca-certificates \
+       curl \
+       gnupg2 \
+       software-properties-common \
    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - >/dev/null \
+    && apt-key fingerprint 0EBFCD88 | grep "9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88"
 
 RUN groupadd -g 998 docker
 
-RUN echo "deb https://apt.dockerproject.org/repo debian-jessie main" > /etc/apt/sources.list.d/docker.list \
+RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
     && apt-get update \
     && apt-get install -y \
-       docker-engine \
+       docker-ce \
        jq \
     && rm -rf /var/lib/apt/lists/* \
-    && curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
+    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/docker-compose \
     && usermod -a -G docker jenkins \
     && systemctl enable docker
